@@ -1,3 +1,3 @@
 # LAN-UDP
 
-UDP tunnel in LAN, for iOS, Android, MacOS and Linux.
+UDP tunnel in LAN, for iOS, Android, MacOS, Linux, etc.
