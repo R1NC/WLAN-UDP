@@ -33,27 +33,27 @@ void jni_udp_callback(const char* ip, int req, char* data) {
 JNIEXPORT void JNICALL
 Java_xyz_rinc_udp_UDPClient_nativeUDPClientStart
 (JNIEnv *env, jclass clazz, jobject callback) {
+    LOGD("client_start");
     if (env->GetJavaVM(&jvm) != JNI_OK) {
         LOGE("get JVM failed");           
     }
     java_udp_callback = (jobject)env->NewGlobalRef(callback);
     udp_client_start(jni_udp_callback);
-    LOGD("client_start");
 }
 
 JNIEXPORT void JNICALL
 Java_xyz_rinc_udp_UDPClient_nativeUDPClientStop
 (JNIEnv *env, jclass clazz) {
-    udp_client_stop();
     LOGD("client_stop");
+    udp_client_stop();
 }
 
 JNIEXPORT void JNICALL
 Java_xyz_rinc_udp_UDPClient_nativeUDPClientRequest
 (JNIEnv *env, jclass clazz, jstring ip, jint req) {
     const char* ipChar = env->GetStringUTFChars(ip, 0);
-    udp_client_request(ipChar, req);
     LOGD("client_request -> ip:%s req:%d", ipChar, req);
+    udp_client_request(ipChar, req);
     env->ReleaseStringUTFChars(ip, ipChar);
 }
 
@@ -62,8 +62,8 @@ Java_xyz_rinc_udp_UDPClient_nativeUDPClientRequestAll
 (JNIEnv *env, jclass clazz, jint req, jstring ip, jstring mask) {
     const char* ipChar = env->GetStringUTFChars(ip, 0);
     const char* maskChar = env->GetStringUTFChars(mask, 0);
+    LOGD("client_request_all -> req:%d ip:%s mask:%s", req, ipChar, maskChar);
     udp_client_request_all_with_ip_mask(req, ipChar, maskChar);
-    LOGD("client_request_all -> req:%d ip:%s mask:%s", req, ip, mask);
     env->ReleaseStringUTFChars(ip, ipChar);
     env->ReleaseStringUTFChars(mask, maskChar);
 }

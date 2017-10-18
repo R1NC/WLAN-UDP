@@ -11,14 +11,12 @@
 
 int listening_udp_server;
 int udp_server_socket_fd;
-const char* _device_info_json_ = "";
 
 void run_udp_server();
 
-void udp_server_start(const char* device_info_json) {
+void udp_server_start() {
     if (listening_udp_server) return;
     listening_udp_server = 1;
-    _device_info_json_ = device_info_json;
     pthread_t server_thread;
     pthread_create(&server_thread, NULL, run_udp_server, NULL);
 }

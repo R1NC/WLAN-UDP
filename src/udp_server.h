@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-void udp_server_start(const char* device_info_json);
+void udp_server_start();
 
 void udp_server_stop();
 

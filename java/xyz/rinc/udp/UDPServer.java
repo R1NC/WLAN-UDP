@@ -2,8 +2,8 @@ package xyz.rinc.udp;
 
 public class UDPServer {
 
-    public static void start(String deviceInfoJson) {
-        nativeUDPServerStart(deviceInfoJson);
+    public static void start() {
+        nativeUDPServerStart();
     }
 
     public static void stop() {
@@ -14,7 +14,7 @@ public class UDPServer {
         System.loadLibrary("UDPServerJNI");
     }
 
-    private static native void nativeUDPServerStart(String deviceInfoJson);
+    private static native void nativeUDPServerStart();
 
     private static native void nativeUDPServerStop();
     
