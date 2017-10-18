@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
     udp_client_start(cb);
     sleep(3);
 #ifndef __ANDROID__
-    udp_client_request_all(REQ_DEVICE_INFO);
+    udp_client_request_all(REQ_MAC_ADDRESS);
 #endif
     while(1) {};
     return 0;

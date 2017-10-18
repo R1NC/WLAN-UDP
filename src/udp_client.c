@@ -12,6 +12,7 @@
 
 int listening_udp_client;
 int udp_client_socket_fd;
+void run_udp_client_request_all_with_ip_mask(int req, struct lan_info* li);
 #ifndef __ANDROID__
 void run_udp_client_request_all(int req);
 #endif
@@ -49,9 +50,9 @@ void udp_client_stop() {
     listening_udp_client = 0;
 }
 
-void udp_client_request(const char* ip, int req) {
+void udp_client_request(const char* lan_ip, int req) {
     if (!listening_udp_client) return;
-    struct sockaddr_in addr = ip2sockaddr(ip, UDP_SERVER_PORT);
+    struct sockaddr_in addr = ip2sockaddr(lan_ip, UDP_SERVER_PORT);
     char* rq = NULL;
     switch (req) {
         case REQ_MAC_ADDRESS: {
@@ -66,6 +67,26 @@ void udp_client_request(const char* ip, int req) {
     }
 }
 
+void udp_client_request_all_with_ip_mask(int req, const char* lan_ip, const char* subnet_mask) {
+    pthread_t req_thread;
+    struct lan_info li = {.local_ip = lan_ip, .subnet_mask = subnet_mask};
+    pthread_create(&req_thread, NULL, run_udp_client_request_all_with_ip_mask, &li);
+}
+
+void run_udp_client_request_all_with_ip_mask(int req, struct lan_info* li) {
+    if (li != NULL && li->local_ip != NULL && li->subnet_mask != NULL) {
+        struct ip_list ips = lan_ip_list(li->local_ip, li->subnet_mask);
+        for (int i = 0; i < ips.num; i++) {
+            if (!str_eq(li->local_ip, ips.ptr[i])) {
+                udp_client_request(ips.ptr[i], req);
+            }
+        }
+        free(ips.ptr);
+    } else {
+        printf("fetch LAN info failed.\n");
+    }
+}
+
 #ifndef __ANDROID__
 void udp_client_request_all(int req) {
     pthread_t req_thread;
@@ -74,18 +95,12 @@ void udp_client_request_all(int req) {
 
 void run_udp_client_request_all(int req) {
     struct lan_info li = get_lan_info();
-    if (li.local_ip != NULL && li.subnet_mask != NULL) {
-        struct ip_list ips = lan_ip_list(li.local_ip, li.subnet_mask);
-        for (int i = 0; i < ips.num; i++) {
-            if (!str_eq(li.local_ip, ips.ptr[i])) {
-                udp_client_request(ips.ptr[i], req);
-            }
-        }
-        free(ips.ptr);
+    run_udp_client_request_all_with_ip_mask(req, &li);
+    if (li.local_ip != NULL) {
         free(li.local_ip);
+    }
+    if (li.subnet_mask != NULL) {
         free(li.subnet_mask);
-    } else {
-        printf("fetch LAN info failed.\n");
     }
 }
 #endif

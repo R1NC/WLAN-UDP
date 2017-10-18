@@ -57,14 +57,16 @@ Java_xyz_rinc_udp_UDPClient_nativeUDPClientRequest
     env->ReleaseStringUTFChars(ip, ipChar);
 }
 
-/*
 JNIEXPORT void JNICALL
 Java_xyz_rinc_udp_UDPClient_nativeUDPClientRequestAll
-(JNIEnv *env, jclass clazz, jint req) {
-    udp_client_request_all(req);
-    LOGD("client_request_all -> req:%d", req);
+(JNIEnv *env, jclass clazz, jint req, jstring ip, jstring mask) {
+    const char* ipChar = env->GetStringUTFChars(ip, 0);
+    const char* maskChar = env->GetStringUTFChars(mask, 0);
+    udp_client_request_all_with_ip_mask(req, ipChar, maskChar);
+    LOGD("client_request_all -> req:%d ip:%s mask:%s", req, ip, mask);
+    env->ReleaseStringUTFChars(ip, ipChar);
+    env->ReleaseStringUTFChars(mask, maskChar);
 }
-*/
 
 #ifdef __cplusplus
 }
