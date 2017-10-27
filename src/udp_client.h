@@ -17,9 +17,7 @@ void udp_client_request(const char* lan_ip, int req);
 
 void udp_client_request_all_with_ip_mask(int req, const char* lan_ip, const char* subnet_mask);
 
-#ifndef __ANDROID__
 void udp_client_request_all(int req);
-#endif
 
 #ifdef __cplusplus
 }

@@ -49,23 +49,10 @@ Java_xyz_rinc_udp_UDPClient_nativeUDPClientStop
 }
 
 JNIEXPORT void JNICALL
-Java_xyz_rinc_udp_UDPClient_nativeUDPClientRequest
-(JNIEnv *env, jclass clazz, jstring ip, jint req) {
-    const char* ipChar = env->GetStringUTFChars(ip, 0);
-    LOGD("client_request -> ip:%s req:%d", ipChar, req);
-    udp_client_request(ipChar, req);
-    env->ReleaseStringUTFChars(ip, ipChar);
-}
-
-JNIEXPORT void JNICALL
 Java_xyz_rinc_udp_UDPClient_nativeUDPClientRequestAll
-(JNIEnv *env, jclass clazz, jint req, jstring ip, jstring mask) {
-    const char* ipChar = env->GetStringUTFChars(ip, 0);
-    const char* maskChar = env->GetStringUTFChars(mask, 0);
-    LOGD("client_request_all -> req:%d ip:%s mask:%s", req, ipChar, maskChar);
-    udp_client_request_all_with_ip_mask(req, ipChar, maskChar);
-    env->ReleaseStringUTFChars(ip, ipChar);
-    env->ReleaseStringUTFChars(mask, maskChar);
+(JNIEnv *env, jclass clazz, jint req) {
+    LOGD("client_request_all -> req:%d ", req);
+    udp_client_request_all(req);
 }
 
 #ifdef __cplusplus

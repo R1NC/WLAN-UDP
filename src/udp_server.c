@@ -22,22 +22,25 @@ void udp_server_start() {
 }
 
 void run_udp_server() {
-    if ((udp_server_socket_fd = udp_listen(UDP_SERVER_PORT)) > 0) {
-        while (listening_udp_server) {
-            struct udp_recv_result urr = udp_recv(udp_server_socket_fd);
-            char *data = NULL, *prefix = NULL;
-            if (str_eq(urr.data, STR_REQ_MAC_ADDRESS)) {
-                data = local_mac_address();
-                prefix = STR_RSP_MAC_ADDRESS;
+    udp_server_socket_fd = udp_listen(UDP_SERVER_PORT);
+    if (udp_server_socket_fd > 0) {
+        if (udp_join_broadcast_group(udp_server_socket_fd, UDP_BROADCAST_ADDRESS) != -1) {
+            while (listening_udp_server) {
+                struct udp_recv_result urr = udp_recv(udp_server_socket_fd);
+                char *data = NULL, *prefix = NULL;
+                if (str_eq(urr.data, STR_REQ_MAC_ADDRESS)) {
+                    data = local_mac_address();
+                    prefix = STR_RSP_MAC_ADDRESS;
+                }
+                if (data && prefix) {
+                    char* result = malloc((strlen(prefix) + strlen(data)) * sizeof(char));
+                    strcpy(result, prefix);
+                    strcat(result, data);
+                    udp_send(udp_server_socket_fd, urr.addr, result);
+                }
             }
-            if (data && prefix) {
-                char* result = malloc((strlen(prefix) + strlen(data)) * sizeof(char));
-                strcpy(result, prefix);
-                strcat(result, data);
-                udp_send(udp_server_socket_fd, urr.addr, result);
-            }
+            close(udp_server_socket_fd);
         }
-        close(udp_server_socket_fd);
     }
 }
 

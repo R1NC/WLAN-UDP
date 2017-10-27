@@ -16,6 +16,8 @@ struct udp_recv_result {
 
 int udp_listen(int port);
 
+int udp_join_broadcast_group(int socket, const char* broadcast_address);
+
 struct udp_recv_result udp_recv(int fd);
 
 int udp_send(int fd, struct sockaddr_in addr, char* data);

@@ -2,6 +2,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -34,6 +35,18 @@ int udp_listen(int port) {
         printf("UDP listening on port %d...\n", port);
     }
     return fd;
+}
+
+int udp_join_broadcast_group(int socket, const char* broadcast_address) {
+    struct ip_mreq imreq;
+    memset(&imreq, 0, sizeof(struct ip_mreq));
+    imreq.imr_multiaddr.s_addr = inet_addr(broadcast_address);
+    imreq.imr_interface.s_addr = INADDR_ANY;
+    int status = setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const void*)&imreq, sizeof(struct ip_mreq));
+    if (status == -1) {
+        printf("UDP join broadcast group failed");
+    }
+    return status;
 }
 
 struct udp_recv_result udp_recv(int fd) {

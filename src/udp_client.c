@@ -13,9 +13,7 @@
 int listening_udp_client;
 int udp_client_socket_fd;
 void run_udp_client_request_all_with_ip_mask(int req, struct lan_info* li);
-#ifndef __ANDROID__
 void run_udp_client_request_all(int req);
-#endif
 udp_callback _udp_callback_;
 
 void run_udp_client();
@@ -87,20 +85,19 @@ void run_udp_client_request_all_with_ip_mask(int req, struct lan_info* li) {
     }
 }
 
-#ifndef __ANDROID__
 void udp_client_request_all(int req) {
     pthread_t req_thread;
     pthread_create(&req_thread, NULL, run_udp_client_request_all, req);
 }
 
 void run_udp_client_request_all(int req) {
-    struct lan_info li = get_lan_info();
+    /*struct lan_info li = get_lan_info();
     run_udp_client_request_all_with_ip_mask(req, &li);
     if (li.local_ip != NULL) {
         free(li.local_ip);
     }
     if (li.subnet_mask != NULL) {
         free(li.subnet_mask);
-    }
+    }*/
+    udp_client_request(UDP_BROADCAST_ADDRESS, req);
 }
-#endif
