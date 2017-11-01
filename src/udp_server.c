@@ -37,6 +37,8 @@ void run_udp_server() {
                     strcpy(result, prefix);
                     strcat(result, data);
                     udp_send(udp_server_socket_fd, urr.addr, result);
+                    free(data);
+                    free(result);
                 }
             }
             close(udp_server_socket_fd);
