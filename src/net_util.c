@@ -9,6 +9,7 @@
 
 #ifndef __ANDROID__
 #include <ifaddrs.h>
+#include <sys/sysctl.h>
 #endif
 
 #ifdef __linux__
@@ -16,7 +17,18 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <unistd.h>
+#include <net/route.h>
 #endif
+
+#ifdef __APPLE__
+#include "iOS/route.h"
+#endif
+
+#define CTL_NET 4 /* network, see socket.h */
+
+#define ROUNDUP(a) ((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) : sizeof(long))
+
+#define addr2char(addr) inet_ntoa(((struct sockaddr_in*)addr)->sin_addr)
 
 #define format_ip(format, var0, var1, var2, var3) do {\
 char* result = malloc(15 * sizeof(char));\
@@ -28,6 +40,9 @@ index++;\
 char (*ip2parts(const char* ip))[4];
 int part2int(char* part);
 int c2i(char ch);
+#ifndef __ANDROID__
+unsigned char* gateway_addr(in_addr_t *addr);
+#endif
 
 char* local_mac_address() {
 #ifdef __linux__
@@ -70,10 +85,18 @@ struct lan_info get_lan_info() {
         while (temp_addr != NULL) {
             if (temp_addr->ifa_addr->sa_family == AF_INET) {
                 if (str_eq(temp_addr->ifa_name, "en0")) {
-                    li.local_ip = malloc(15 * sizeof(char)), li.subnet_mask = malloc(15 * sizeof(char)), li.broadcast_address = malloc(15 * sizeof(char));
-                    strcpy(li.local_ip, inet_ntoa(((struct sockaddr_in*)temp_addr->ifa_addr)->sin_addr));
-                    strcpy(li.subnet_mask, inet_ntoa(((struct sockaddr_in*)temp_addr->ifa_netmask)->sin_addr));
-                    strcpy(li.broadcast_address, inet_ntoa(((struct sockaddr_in*)temp_addr->ifa_dstaddr)->sin_addr));
+                    li.local_ip = malloc(15 * sizeof(char));
+                    strcpy(li.local_ip, addr2char(temp_addr->ifa_addr));
+                    li.subnet_mask = malloc(15 * sizeof(char));
+                    strcpy(li.subnet_mask, addr2char(temp_addr->ifa_netmask));
+                    li.broadcast_address = malloc(15 * sizeof(char));
+                    strcpy(li.broadcast_address, addr2char(temp_addr->ifa_dstaddr));
+                    if (temp_addr->ifa_addr) {
+                        li.gateway_address = malloc(15 * sizeof(char));
+                        char* ga = gateway_addr(temp_addr->ifa_addr);
+                        strcpy(li.gateway_address, ga);
+                        free(ga);
+                    }
                 }
             }
             temp_addr = temp_addr->ifa_next;
@@ -81,6 +104,47 @@ struct lan_info get_lan_info() {
     }
     freeifaddrs(interfaces);
     return li;
+}
+
+unsigned char* gateway_addr(in_addr_t *addr) {
+    unsigned char * gateway = malloc(4);
+    int mib[] = {CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_FLAGS, RTF_GATEWAY};
+    size_t l;
+    char *buf, *p;
+    struct rt_msghdr *rt;
+    struct sockaddr *sa;
+    struct sockaddr *sa_tab[RTAX_MAX];
+    int i;
+    if (sysctl(mib, sizeof(mib) / sizeof(int), 0, &l, 0, 0) < 0) {
+        return gateway;
+    }
+    if (l > 0) {
+        buf = malloc(l);
+        if (sysctl(mib, sizeof(mib) / sizeof(int), buf, &l, 0, 0) < 0) {
+            return gateway;
+        }
+        for (p = buf; p < buf + l; p += rt->rtm_msglen) {
+            rt = (struct rt_msghdr*)p;
+            sa = (struct sockaddr*)(rt + 1);
+            for (i = 0; i < RTAX_MAX; i++) {
+                if (rt->rtm_addrs & (1 << i)) {
+                    sa_tab[i] = sa;
+                    sa = (struct sockaddr*)((char*)sa + ROUNDUP(sa->sa_len));
+                } else {
+                    sa_tab[i] = NULL;
+                }
+            }
+            if(((rt->rtm_addrs & (RTA_DST|RTA_GATEWAY)) == (RTA_DST|RTA_GATEWAY))
+               && sa_tab[RTAX_DST]->sa_family == AF_INET
+               && sa_tab[RTAX_GATEWAY]->sa_family == AF_INET) {
+                for (int i = 0; i < 4; i++) {
+                    gateway[i] = (((struct sockaddr_in*)(sa_tab[RTAX_GATEWAY]))->sin_addr.s_addr >> (i * 8)) & 0xFF;
+                }
+            }
+        }
+        free(buf);
+    }
+    return gateway;
 }
 #endif
 
