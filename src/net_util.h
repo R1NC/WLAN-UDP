@@ -10,6 +10,8 @@ extern "C" {
 struct lan_info {
     char* local_ip;
     char* subnet_mask;
+    char* broadcast_address;
+    char* gateway_address;
 };
 
 struct ip_list {
