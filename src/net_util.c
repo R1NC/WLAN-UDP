@@ -70,9 +70,10 @@ struct lan_info get_lan_info() {
         while (temp_addr != NULL) {
             if (temp_addr->ifa_addr->sa_family == AF_INET) {
                 if (str_eq(temp_addr->ifa_name, "en0")) {
-                    li.local_ip = malloc(15 * sizeof(char)), li.subnet_mask = malloc(15 * sizeof(char));
+                    li.local_ip = malloc(15 * sizeof(char)), li.subnet_mask = malloc(15 * sizeof(char)), li.broadcast_address = malloc(15 * sizeof(char));
                     strcpy(li.local_ip, inet_ntoa(((struct sockaddr_in*)temp_addr->ifa_addr)->sin_addr));
                     strcpy(li.subnet_mask, inet_ntoa(((struct sockaddr_in*)temp_addr->ifa_netmask)->sin_addr));
+                    strcpy(li.broadcast_address, inet_ntoa(((struct sockaddr_in*)temp_addr->ifa_dstaddr)->sin_addr));
                 }
             }
             temp_addr = temp_addr->ifa_next;
