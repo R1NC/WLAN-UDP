@@ -59,7 +59,7 @@ void udp_client_request(const char* lan_ip, int req) {
         }
     }
     if (rq) {
-        char* data = malloc(strlen(rq) * sizeof(char));
+        char* data = (char*)malloc(strlen(rq) * sizeof(char));
         strcpy(data, rq);
         udp_send(udp_client_socket_fd, addr, data);
         free(data);

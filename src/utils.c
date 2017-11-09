@@ -26,7 +26,7 @@ char* current_timestamp() {
     long int usec = (long int)tval.tv_usec;
 
     char format[] = "%s.%06ld";
-    char* result = malloc(33 * sizeof(char));
+    char* result = (char*)malloc(33 * sizeof(char));
     sprintf(result, format, ymdhms, usec);
     
     return result;

@@ -31,7 +31,7 @@
 #define addr2char(addr) inet_ntoa(((struct sockaddr_in*)addr)->sin_addr)
 
 #define format_ip(format, var0, var1, var2, var3) do {\
-char* result = malloc(15 * sizeof(char));\
+char* result = (char*)malloc(15 * sizeof(char));\
 sprintf(result, format, var0, var1, var2, var3);\
 ips.ptr[index] = result;\
 index++;\
@@ -54,7 +54,7 @@ char* local_mac_address() {
     close(fd);
     unsigned char* mac = (unsigned char*)ifr.ifr_hwaddr.sa_data;
     char format[] = "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x";
-    char* result = malloc(17 * sizeof(char));
+    char* result = (char*)malloc(17 * sizeof(char));
     sprintf(result, format, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     return result;
 #elif __APPLE__
@@ -71,7 +71,7 @@ struct sockaddr_in ip2sockaddr(char* ip, int port) {
 }
 
 char* sockaddr2ip(struct sockaddr_in sa) {
-    char* ip = malloc(15 * sizeof(char));
+    char* ip = (char*)malloc(15 * sizeof(char));
     inet_ntop(AF_INET, &(sa.sin_addr), ip, INET_ADDRSTRLEN);
     return ip;
 }
@@ -85,14 +85,14 @@ struct lan_info get_lan_info() {
         while (temp_addr != NULL) {
             if (temp_addr->ifa_addr->sa_family == AF_INET) {
                 if (str_eq(temp_addr->ifa_name, "en0")) {
-                    li.local_ip = malloc(15 * sizeof(char));
+                    li.local_ip = (char*)malloc(15 * sizeof(char));
                     strcpy(li.local_ip, addr2char(temp_addr->ifa_addr));
-                    li.subnet_mask = malloc(15 * sizeof(char));
+                    li.subnet_mask = (char*)malloc(15 * sizeof(char));
                     strcpy(li.subnet_mask, addr2char(temp_addr->ifa_netmask));
-                    li.broadcast_address = malloc(15 * sizeof(char));
+                    li.broadcast_address = (char*)malloc(15 * sizeof(char));
                     strcpy(li.broadcast_address, addr2char(temp_addr->ifa_dstaddr));
                     if (temp_addr->ifa_addr) {
-                        li.gateway_address = malloc(15 * sizeof(char));
+                        li.gateway_address = (char*)malloc(15 * sizeof(char));
                         char* ga = gateway_addr(temp_addr->ifa_addr);
                         strcpy(li.gateway_address, ga);
                         free(ga);
@@ -107,7 +107,7 @@ struct lan_info get_lan_info() {
 }
 
 unsigned char* gateway_addr(in_addr_t *addr) {
-    unsigned char * gateway = malloc(4);
+    unsigned char * gateway = (char*)malloc(4);
     int mib[] = {CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_FLAGS, RTF_GATEWAY};
     size_t l;
     char *buf, *p;
@@ -119,7 +119,7 @@ unsigned char* gateway_addr(in_addr_t *addr) {
         return gateway;
     }
     if (l > 0) {
-        buf = malloc(l);
+        buf = (char*)malloc(l);
         if (sysctl(mib, sizeof(mib) / sizeof(int), buf, &l, 0, 0) < 0) {
             return gateway;
         }
@@ -156,7 +156,7 @@ struct ip_list lan_ip_list(char* lan_ip, char* subnet_mask) {
         int mask0 = part2int(mask_parts[0]), mask1 = part2int(mask_parts[1]), mask2 = part2int(mask_parts[2]), mask3 = part2int(mask_parts[3]);
         if (mask0 < 255) {
             ips.num = (254 - mask0) * 254 * 254 * 254;
-            ips.ptr = malloc(ips.num * sizeof(char*));
+            ips.ptr = (char**)malloc(ips.num * sizeof(char*));
             int index = 0;
             for (int i = mask0 + 1; i < 255; i++) {
                 for (int j = 1; j < 255; j++) {
@@ -169,7 +169,7 @@ struct ip_list lan_ip_list(char* lan_ip, char* subnet_mask) {
             }
         } else if (mask1 < 255) {
             ips.num = (254 - mask1) * 254 * 254;
-            ips.ptr = malloc(ips.num * sizeof(char*));
+            ips.ptr = (char**)malloc(ips.num * sizeof(char*));
             int index = 0;
             for (int i = mask1 + 1; i < 255; i++) {
                 for (int j = 1; j < 255; j++) {
@@ -180,7 +180,7 @@ struct ip_list lan_ip_list(char* lan_ip, char* subnet_mask) {
             }
         } else if (mask2 < 255) {
             ips.num = (254 - mask2) * 254;
-            ips.ptr = malloc(ips.num * sizeof(char*));
+            ips.ptr = (char**)malloc(ips.num * sizeof(char*));
             int index = 0;
             for (int i = mask2 + 1; i < 255; i++) {
                 for (int j = 1; j < 255; j++) {
@@ -189,7 +189,7 @@ struct ip_list lan_ip_list(char* lan_ip, char* subnet_mask) {
             }
         } else if (mask3 < 255) {
             ips.num = 254 - mask3;
-            ips.ptr = malloc(ips.num * sizeof(char*));
+            ips.ptr = (char**)malloc(ips.num * sizeof(char*));
             int index = 0;
             for (int i = mask3 + 1; i < 255; i++) {
                 format_ip("%s.%s.%s.%d", ip_parts[0], ip_parts[1], ip_parts[2], i);
@@ -202,7 +202,7 @@ struct ip_list lan_ip_list(char* lan_ip, char* subnet_mask) {
 }
 
 char (*ip2parts(const char* ip))[4] {
-    char (*parts)[4] = malloc(4 * sizeof(char*));
+    char (*parts)[4] = (char(*)[4])malloc(4 * sizeof(char*));
     //memset(parts, 0, 4);
     int part_index = 0, last_split_index = -1;
     unsigned long len = strlen(ip);

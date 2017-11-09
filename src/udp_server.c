@@ -33,7 +33,7 @@ void run_udp_server() {
                     prefix = STR_RSP_MAC_ADDRESS;
                 }
                 if (data && prefix) {
-                    char* result = malloc((strlen(prefix) + strlen(data)) * sizeof(char));
+                    char* result = (char*)malloc((strlen(prefix) + strlen(data)) * sizeof(char));
                     strcpy(result, prefix);
                     strcat(result, data);
                     udp_send(udp_server_socket_fd, urr.addr, result);
