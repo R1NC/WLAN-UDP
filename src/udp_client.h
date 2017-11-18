@@ -13,9 +13,9 @@ void udp_client_start(udp_callback callback);
 
 void udp_client_stop();
 
-void udp_client_request(const char* lan_ip, int req);
+void udp_client_request(const char* wlan_ip, int req);
 
-void udp_client_request_all_with_ip_mask(int req, const char* lan_ip, const char* subnet_mask);
+void udp_client_request_all_with_ip_mask(int req, const char* wlan_ip, const char* subnet_mask);
 
 void udp_client_request_all(int req);
 

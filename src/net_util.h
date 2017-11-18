@@ -7,7 +7,7 @@ extern "C" {
 
 #include <netinet/in.h>
 
-struct lan_info {
+struct wlan_info {
     char* local_ip;
     char* subnet_mask;
     char* broadcast_address;
@@ -26,10 +26,10 @@ struct sockaddr_in ip2sockaddr(char* ip, int port);
 char* sockaddr2ip(struct sockaddr_in sa);
 
 #ifndef __ANDROID__
-struct lan_info get_lan_info();
+struct wlan_info get_wlan_info();
 #endif
 
-struct ip_list lan_ip_list(char* lan_ip, char* subnet_mask);
+struct ip_list wlan_ip_list(char* wlan_ip, char* subnet_mask);
 
 #ifdef __cplusplus
 }

@@ -12,7 +12,7 @@
 
 int listening_udp_client;
 int udp_client_socket_fd;
-void run_udp_client_request_all_with_ip_mask(int req, struct lan_info* li);
+void run_udp_client_request_all_with_ip_mask(int req, struct wlan_info* li);
 void run_udp_client_request_all(int req);
 udp_callback _udp_callback_;
 
@@ -48,9 +48,9 @@ void udp_client_stop() {
     listening_udp_client = 0;
 }
 
-void udp_client_request(const char* lan_ip, int req) {
+void udp_client_request(const char* wlan_ip, int req) {
     if (!listening_udp_client) return;
-    struct sockaddr_in addr = ip2sockaddr(lan_ip, UDP_SERVER_PORT);
+    struct sockaddr_in addr = ip2sockaddr(wlan_ip, UDP_SERVER_PORT);
     char* rq = NULL;
     switch (req) {
         case REQ_MAC_ADDRESS: {
@@ -66,15 +66,15 @@ void udp_client_request(const char* lan_ip, int req) {
     }
 }
 
-void udp_client_request_all_with_ip_mask(int req, const char* lan_ip, const char* subnet_mask) {
+void udp_client_request_all_with_ip_mask(int req, const char* wlan_ip, const char* subnet_mask) {
     pthread_t req_thread;
-    struct lan_info li = {.local_ip = lan_ip, .subnet_mask = subnet_mask};
+    struct wlan_info li = {.local_ip = wlan_ip, .subnet_mask = subnet_mask};
     pthread_create(&req_thread, NULL, run_udp_client_request_all_with_ip_mask, &li);
 }
 
-void run_udp_client_request_all_with_ip_mask(int req, struct lan_info* li) {
+void run_udp_client_request_all_with_ip_mask(int req, struct wlan_info* li) {
     if (li != NULL && li->local_ip != NULL && li->subnet_mask != NULL) {
-        struct ip_list ips = lan_ip_list(li->local_ip, li->subnet_mask);
+        struct ip_list ips = wlan_ip_list(li->local_ip, li->subnet_mask);
         for (int i = 0; i < ips.num; i++) {
             if (!str_eq(li->local_ip, ips.ptr[i])) {
                 udp_client_request(ips.ptr[i], req);
@@ -92,7 +92,7 @@ void udp_client_request_all(int req) {
 }
 
 void run_udp_client_request_all(int req) {
-    /*struct lan_info li = get_lan_info();
+    /*struct wlan_info li = get_wlan_info();
     run_udp_client_request_all_with_ip_mask(req, &li);
     if (li.local_ip != NULL) {
         free(li.local_ip);

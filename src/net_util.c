@@ -77,8 +77,8 @@ char* sockaddr2ip(struct sockaddr_in sa) {
 }
 
 #ifndef __ANDROID__
-struct lan_info get_lan_info() {
-    struct lan_info li = {};
+struct wlan_info get_wlan_info() {
+    struct wlan_info li = {};
     struct ifaddrs *interfaces = NULL, *temp_addr = NULL;
     if (getifaddrs(&interfaces) == 0) {
         temp_addr = interfaces;
@@ -148,10 +148,10 @@ unsigned char* gateway_addr(in_addr_t *addr) {
 }
 #endif
 
-struct ip_list lan_ip_list(char* lan_ip, char* subnet_mask) {
+struct ip_list wlan_ip_list(char* wlan_ip, char* subnet_mask) {
     struct ip_list ips = {};
-    if (lan_ip != NULL && subnet_mask != NULL) {
-        char (*ip_parts)[4] = ip2parts(lan_ip);
+    if (wlan_ip != NULL && subnet_mask != NULL) {
+        char (*ip_parts)[4] = ip2parts(wlan_ip);
         char (*mask_parts)[4] = ip2parts(subnet_mask);
         int mask0 = part2int(mask_parts[0]), mask1 = part2int(mask_parts[1]), mask2 = part2int(mask_parts[2]), mask3 = part2int(mask_parts[3]);
         if (mask0 < 255) {
